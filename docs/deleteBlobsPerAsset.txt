@@ -1,0 +1,18 @@
+CREATE OR REPLACE FUNCTION deleteOldBlobsPerPackage() RETURNS int4 AS '
+DECLARE r RECORD;
+
+BEGIN
+    FOR r IN select DISTINCT solids.reference_id as sid from artifacts 
+	inner join deliverables ON artifacts.deliverable_id = deliverables.id 
+	inner join solids on solids.artifact_id = artifacts.id 
+	where deliverables.name not in ('OPCOffline.1.0.0_int_151208_b5755') AND
+      deliverables.asset_id in (442);
+    LOOP
+		DELETE FROM blobs where solid_id = r.sid;
+		DELETE FROM solids where id = r.sid;
+    END LOOP;
+return 1;
+END;
+' LANGUAGE plpgsql;
+
+SELECT deleteOldBlobsPerPackage() as output;
